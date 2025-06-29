@@ -5,23 +5,24 @@ import { useTheme } from '../context/ThemeContext';
 import { ArrowLeft, Edit3, File, Image, Video, FileText } from 'lucide-react';
 
 interface FileItem {
-  id: string;
+  _id: string;
   name: string;
   size: number;
   type: string;
   url: string;
+  path: string;
 }
 
 interface ExtendedIdea {
-  id: string;
+  _id: string;
   title: string;
   description: string;
-  category: string;
+  category: any;
   status: 'todo' | 'in-progress' | 'completed' | 'on-hold';
   priority: 'high' | 'medium' | 'low';
   attachments: FileItem[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 const IdeaViewer: React.FC = () => {
@@ -31,8 +32,11 @@ const IdeaViewer: React.FC = () => {
   const { ideas, categories } = useData();
   
   const ideaId = searchParams.get('id');
-  const idea = ideaId ? ideas.find(i => i.id === ideaId) as ExtendedIdea : null;
-  const category = idea ? categories.find(cat => cat.id === idea.category) : null;
+  const idea = ideaId ? ideas.find(i => i._id === ideaId) as ExtendedIdea : null;
+  const category = idea ? categories.find(cat => {
+    const categoryId = typeof idea.category === 'string' ? idea.category : idea.category._id;
+    return cat._id === categoryId;
+  }) : null;
 
   if (!idea) {
     return (
@@ -66,7 +70,7 @@ const IdeaViewer: React.FC = () => {
   };
 
   const openEditor = () => {
-    navigate(`/idea-editor?id=${idea.id}`);
+    navigate(`/idea-editor?id=${idea._id}`);
   };
 
   // Determine if this was edited (has updatedAt different from createdAt)
@@ -96,21 +100,48 @@ const IdeaViewer: React.FC = () => {
       <div className={`bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b ${borderClasses} sticky top-0 z-40`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Left: Title */}
-            <div className="flex items-center space-x-4">
+            {/* Left: Back button and Title */}
+            <div className="flex items-center space-x-4 flex-1">
               <button
                 onClick={() => navigate('/projects')}
                 className={`p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100/50 dark:hover:bg-gray-700/50 backdrop-blur-sm transition-colors duration-200`}
               >
                 <ArrowLeft className="h-5 w-5" />
               </button>
-              <h1 className={`text-xl font-semibold ${textClasses}`}>
+              <h1 className={`text-xl font-semibold ${textClasses} truncate`}>
                 {idea.title}
               </h1>
             </div>
             
-            {/* Right: Date and Edit Button */}
+            {/* Right: Edit Button */}
             <div className="flex items-center space-x-4">
+              <button
+                onClick={openEditor}
+                className={`px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-red-600 dark:to-red-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 dark:hover:from-red-700 dark:hover:to-red-800 transition-all duration-200 shadow-lg flex items-center space-x-2`}
+              >
+                <Edit3 className="h-4 w-4" />
+                <span>Edit</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className={`${cardClasses} rounded-xl shadow-lg border ${borderClasses} overflow-hidden`}>
+          <div className="p-8">
+            {/* Category and Date */}
+            <div className="flex items-center justify-between mb-6">
+              {/* Category tile with emoji */}
+              {category && (
+                <div className={`inline-flex items-center space-x-2 px-4 py-2 bg-blue-100/80 dark:bg-blue-900/50 backdrop-blur-sm text-blue-700 dark:text-blue-300 rounded-lg`}>
+                  <span className="text-xl">{category.emoji}</span>
+                  <span className="font-medium">{category.name}</span>
+                </div>
+              )}
+              
+              {/* Date */}
               <div className={`text-sm ${secondaryTextClasses}`}>
                 {dateLabel} {new Date(displayDate).toLocaleDateString('en-US', {
                   weekday: 'long',
@@ -122,31 +153,7 @@ const IdeaViewer: React.FC = () => {
                   minute: '2-digit'
                 })}
               </div>
-              <button
-                onClick={openEditor}
-                className={`p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg hover:bg-gray-100/50 dark:hover:bg-gray-700/50 backdrop-blur-sm transition-colors duration-200`}
-                title="Edit idea"
-              >
-                <Edit3 className="h-4 w-4" />
-              </button>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className={`${cardClasses} rounded-xl shadow-lg border ${borderClasses} overflow-hidden`}>
-          <div className="p-8">
-            {/* Category tile with emoji (no title) */}
-            {category && (
-              <div className="mb-6">
-                <div className={`inline-flex items-center space-x-2 px-4 py-2 bg-blue-100/80 dark:bg-blue-900/50 backdrop-blur-sm text-blue-700 dark:text-blue-300 rounded-lg`}>
-                  <span className="text-xl">{category.emoji}</span>
-                  <span className="font-medium">{category.name}</span>
-                </div>
-              </div>
-            )}
             
             {/* Content with proper text color */}
             <div 
@@ -165,7 +172,7 @@ const IdeaViewer: React.FC = () => {
                     const IconComponent = getFileIcon(file.type);
                     return (
                       <div
-                        key={file.id}
+                        key={file._id}
                         className={`p-4 bg-gray-50/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-lg border ${borderClasses} hover:bg-gray-100/80 dark:hover:bg-gray-600/80 transition-colors duration-200 cursor-pointer`}
                         onClick={() => {
                           if (file.type.startsWith('image/') || file.type.startsWith('video/')) {

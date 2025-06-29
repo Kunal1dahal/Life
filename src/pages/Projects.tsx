@@ -32,6 +32,8 @@ const Projects: React.FC = () => {
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [categorySettings, setCategorySettings] = useState<string | null>(null);
+  const [showRenameModal, setShowRenameModal] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
 
   const [newCategory, setNewCategory] = useState({
     name: '',
@@ -95,32 +97,39 @@ const Projects: React.FC = () => {
     navigate(`/idea-viewer?id=${ideaId}`);
   };
 
-  const handleCategorySettings = async (categoryId: string, action: 'rename' | 'delete') => {
-    if (action === 'rename') {
-      const category = categories.find(cat => cat._id === categoryId);
-      if (category) {
-        const newName = prompt('Enter new category name:', category.name);
-        if (newName && newName.trim()) {
-          try {
-            await updateCategory(categoryId, { name: newName.trim() });
-          } catch (error) {
-            console.error('Error updating category:', error);
-            alert('Failed to update category. Please try again.');
-          }
-        }
-      }
-    } else if (action === 'delete') {
-      const category = categories.find(cat => cat._id === categoryId);
-      if (category && confirm(`Are you sure you want to delete "${category.name}" and all its ideas?`)) {
-        try {
-          await deleteCategory(categoryId);
-        } catch (error) {
-          console.error('Error deleting category:', error);
-          alert('Failed to delete category. Please try again.');
-        }
+  const handleRenameCategory = (categoryId: string) => {
+    const category = categories.find(cat => cat._id === categoryId);
+    if (category) {
+      setRenameValue(category.name);
+      setShowRenameModal(categoryId);
+      setCategorySettings(null);
+    }
+  };
+
+  const submitRename = async () => {
+    if (showRenameModal && renameValue.trim()) {
+      try {
+        await updateCategory(showRenameModal, { name: renameValue.trim() });
+        setShowRenameModal(null);
+        setRenameValue('');
+      } catch (error) {
+        console.error('Error updating category:', error);
+        alert('Failed to update category. Please try again.');
       }
     }
-    setCategorySettings(null);
+  };
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    const category = categories.find(cat => cat._id === categoryId);
+    if (category && confirm(`Are you sure you want to delete "${category.name}" and all its ideas?`)) {
+      try {
+        await deleteCategory(categoryId);
+        setCategorySettings(null);
+      } catch (error) {
+        console.error('Error deleting category:', error);
+        alert('Failed to delete category. Please try again.');
+      }
+    }
   };
 
   const handleDeleteIdea = async (ideaId: string) => {
@@ -252,21 +261,19 @@ const Projects: React.FC = () => {
                     
                     {/* Settings Dropdown - Fixed positioning */}
                     {categorySettings === category._id && (
-                      <div className={`absolute right-0 top-full mt-2 ${cardClasses} border ${borderClasses} rounded-lg shadow-xl z-50 min-w-[160px] overflow-hidden`}>
+                      <div className={`absolute right-0 top-full mt-2 ${cardClasses} border ${borderClasses} rounded-lg shadow-xl z-50 min-w-[120px] overflow-hidden`}>
                         <button
-                          onClick={() => handleCategorySettings(category._id, 'rename')}
-                          className={`w-full px-4 py-3 text-left text-sm ${textClasses} hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center space-x-2 transition-colors duration-200`}
+                          onClick={() => handleRenameCategory(category._id)}
+                          className={`w-full px-4 py-3 text-left text-sm ${textClasses} hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200`}
                         >
-                          <Eye className="h-4 w-4" />
-                          <span>Rename Category</span>
+                          Rename
                         </button>
                         <div className={`border-t ${borderClasses}`}></div>
                         <button
-                          onClick={() => handleCategorySettings(category._id, 'delete')}
-                          className={`w-full px-4 py-3 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center space-x-2 transition-colors duration-200`}
+                          onClick={() => handleDeleteCategory(category._id)}
+                          className={`w-full px-4 py-3 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200`}
                         >
-                          <Trash2 className="h-4 w-4" />
-                          <span>Delete Category</span>
+                          Delete
                         </button>
                       </div>
                     )}
@@ -438,6 +445,59 @@ const Projects: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Rename Category Modal */}
+      {showRenameModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`${cardClasses} rounded-xl p-6 w-full max-w-md shadow-2xl border ${borderClasses}`}>
+            <h3 className={`text-lg font-semibold ${textClasses} mb-4`}>
+              Rename Category
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className={`block text-sm font-medium ${secondaryTextClasses} mb-2`}>
+                  Category Name *
+                </label>
+                <input
+                  type="text"
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  className={`w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg ${cardClasses} ${textClasses} focus:ring-2 focus:ring-green-500 focus:border-transparent`}
+                  placeholder="Enter new category name..."
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      submitRename();
+                    } else if (e.key === 'Escape') {
+                      setShowRenameModal(null);
+                      setRenameValue('');
+                    }
+                  }}
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowRenameModal(null);
+                    setRenameValue('');
+                  }}
+                  className={`px-4 py-2 ${secondaryTextClasses} hover:text-gray-800 dark:hover:text-gray-200 transition-colors duration-200`}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={submitRename}
+                  className={`px-6 py-2 ${buttonClasses} text-white rounded-lg transition-all duration-200 shadow-lg`}
+                >
+                  Rename
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
