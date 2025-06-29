@@ -12,6 +12,7 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
+    console.log('API Request:', config.method?.toUpperCase(), config.url, config.data);
     // Add auth token if available
     const token = localStorage.getItem('token');
     if (token) {
@@ -27,11 +28,12 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
+    console.log('API Response:', response.status, response.data);
     return response.data;
   },
   (error) => {
     const message = error.response?.data?.error || error.message || 'An error occurred';
-    console.error('API Error:', message);
+    console.error('API Error:', error.response?.status, message);
     return Promise.reject(new Error(message));
   }
 );

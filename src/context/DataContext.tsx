@@ -202,7 +202,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Category operations
   const addCategory = async (categoryData: Omit<Category, '_id' | 'createdAt' | 'updatedAt'>) => {
     try {
+      console.log('Adding category:', categoryData);
       const response = await categoryAPI.create(categoryData);
+      console.log('Category added response:', response);
       setCategories(prev => [...prev, response.data]);
     } catch (err) {
       console.error('Error adding category:', err);
@@ -212,7 +214,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateCategory = async (id: string, updates: Partial<Category>) => {
     try {
+      console.log('Updating category:', id, updates);
       const response = await categoryAPI.update(id, updates);
+      console.log('Category updated response:', response);
       setCategories(prev => prev.map(cat => cat._id === id ? response.data : cat));
     } catch (err) {
       console.error('Error updating category:', err);
@@ -222,7 +226,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const deleteCategory = async (id: string) => {
     try {
+      console.log('Deleting category:', id);
       await categoryAPI.delete(id);
+      console.log('Category deleted successfully');
       setCategories(prev => prev.filter(cat => cat._id !== id));
       // Also remove ideas in this category
       setIdeas(prev => prev.filter(idea => {
