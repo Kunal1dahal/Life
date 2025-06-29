@@ -590,7 +590,8 @@ const IdeaEditor: React.FC = () => {
                     lineHeight: '1.6',
                     direction: 'ltr',
                     textAlign: 'left',
-                    unicodeBidi: 'normal'
+                    unicodeBidi: 'normal',
+                    writingMode: 'horizontal-tb'
                   }}
                   suppressContentEditableWarning={true}
                 />
