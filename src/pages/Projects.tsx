@@ -109,6 +109,7 @@ const Projects: React.FC = () => {
   const submitRename = async () => {
     if (showRenameModal && renameValue.trim()) {
       try {
+        console.log('Submitting rename for category:', showRenameModal, 'new name:', renameValue.trim());
         await updateCategory(showRenameModal, { name: renameValue.trim() });
         setShowRenameModal(null);
         setRenameValue('');
@@ -123,6 +124,7 @@ const Projects: React.FC = () => {
     const category = categories.find(cat => cat._id === categoryId);
     if (category && confirm(`Are you sure you want to delete "${category.name}" and all its ideas?`)) {
       try {
+        console.log('Deleting category:', categoryId);
         await deleteCategory(categoryId);
         setCategorySettings(null);
       } catch (error) {
@@ -259,23 +261,38 @@ const Projects: React.FC = () => {
                       <Settings className="h-4 w-4" />
                     </button>
                     
-                    {/* Settings Dropdown - Fixed positioning */}
+                    {/* Settings Dropdown - Fixed positioning and z-index */}
                     {categorySettings === category._id && (
-                      <div className={`absolute right-0 top-full mt-2 ${cardClasses} border ${borderClasses} rounded-lg shadow-xl z-50 min-w-[120px] overflow-hidden`}>
-                        <button
-                          onClick={() => handleRenameCategory(category._id)}
-                          className={`w-full px-4 py-3 text-left text-sm ${textClasses} hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200`}
-                        >
-                          Rename
-                        </button>
-                        <div className={`border-t ${borderClasses}`}></div>
-                        <button
-                          onClick={() => handleDeleteCategory(category._id)}
-                          className={`w-full px-4 py-3 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200`}
-                        >
-                          Delete
-                        </button>
-                      </div>
+                      <>
+                        {/* Backdrop to close dropdown */}
+                        <div 
+                          className="fixed inset-0 z-40"
+                          onClick={() => setCategorySettings(null)}
+                        />
+                        
+                        {/* Dropdown menu */}
+                        <div className={`absolute right-0 top-full mt-2 ${cardClasses} border ${borderClasses} rounded-lg shadow-xl z-50 min-w-[120px] overflow-hidden`}>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRenameCategory(category._id);
+                            }}
+                            className={`w-full px-4 py-3 text-left text-sm ${textClasses} hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200`}
+                          >
+                            Rename
+                          </button>
+                          <div className={`border-t ${borderClasses}`}></div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCategory(category._id);
+                            }}
+                            className={`w-full px-4 py-3 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200`}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
@@ -500,14 +517,6 @@ const Projects: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Click outside to close settings */}
-      {categorySettings && (
-        <div 
-          className="fixed inset-0 z-40"
-          onClick={() => setCategorySettings(null)}
-        />
       )}
     </div>
   );
