@@ -261,7 +261,7 @@ const Projects: React.FC = () => {
                       <Settings className="h-4 w-4" />
                     </button>
                     
-                    {/* Settings Dropdown - Fixed positioning and z-index */}
+                    {/* Settings Dropdown - FIXED positioning */}
                     {categorySettings === category._id && (
                       <>
                         {/* Backdrop to close dropdown */}
@@ -270,14 +270,14 @@ const Projects: React.FC = () => {
                           onClick={() => setCategorySettings(null)}
                         />
                         
-                        {/* Dropdown menu */}
-                        <div className={`absolute right-0 top-full mt-2 ${cardClasses} border ${borderClasses} rounded-lg shadow-xl z-50 min-w-[120px] overflow-hidden`}>
+                        {/* Dropdown menu - FIXED positioning */}
+                        <div className={`absolute right-0 top-full mt-1 ${cardClasses} border ${borderClasses} rounded-lg shadow-xl z-50 min-w-[100px] overflow-hidden`}>
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               handleRenameCategory(category._id);
                             }}
-                            className={`w-full px-4 py-3 text-left text-sm ${textClasses} hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200`}
+                            className={`w-full px-3 py-2 text-left text-sm ${textClasses} hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200`}
                           >
                             Rename
                           </button>
@@ -287,7 +287,7 @@ const Projects: React.FC = () => {
                               e.stopPropagation();
                               handleDeleteCategory(category._id);
                             }}
-                            className={`w-full px-4 py-3 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200`}
+                            className={`w-full px-3 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200`}
                           >
                             Delete
                           </button>
