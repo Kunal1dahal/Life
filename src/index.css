@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ensure text is always readable */
+* {
+  color: inherit;
+}
+
+/* Light mode text colors */
+.light * {
+  color: #000000;
+}
+
+/* Dark mode text colors */
+.dark * {
+  color: #ffffff;
+}
+
+/* Secondary text colors */
+.light .text-secondary {
+  color: #374151;
+}
+
+.dark .text-secondary {
+  color: #d1d5db;
+}
+
+/* Ensure proper contrast for all elements */
+.light {
+  --text-primary: #000000;
+  --text-secondary: #374151;
+  --bg-card: rgba(243, 244, 246, 0.8);
+  --bg-card-hover: rgba(229, 231, 235, 0.8);
+}
+
+.dark {
+  --text-primary: #ffffff;
+  --text-secondary: #d1d5db;
+  --bg-card: rgba(31, 41, 55, 0.8);
+  --bg-card-hover: rgba(55, 65, 81, 0.8);
+}
+
+/* Editor background styles */
+.editor-background {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.dark .editor-background {
+  background: rgba(55, 65, 81, 0.9);
+}
